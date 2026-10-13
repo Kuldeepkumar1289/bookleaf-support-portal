@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BookLeaf Author Support & Communication Portal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+  <!-- NAVBAR -->
+  <header class="bg-indigo-900 text-white shadow-md">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl font-bold tracking-tight text-amber-400">BookLeaf</span>
+        <span class="text-xs uppercase px-2 py-0.5 rounded bg-indigo-800 tracking-wider">Support Portal</span>
+      </div>
+      <div id="nav-user-info" class="hidden flex items-center space-x-4">
+        <span id="user-display" class="text-sm text-slate-200"></span>
+        <button onclick="logout()" class="text-xs bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded font-medium transition">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto p-4 md:p-6">
+
+    <!-- 1. AUTH SCREEN -->
+    <section id="auth-section" class="max-w-md mx-auto mt-12 bg-white p-8 rounded-xl shadow-lg border border-slate-200">
+      <h2 class="text-2xl font-bold text-center text-slate-900 mb-6">Portal Sign In</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Email Address</label>
+          <input id="login-email" type="email" value="priya.sharma@email.com" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Password</label>
+          <input id="login-pass" type="password" value="author123" class="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none" />
+        </div>
+        <button onclick="handleLogin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 rounded-lg text-sm transition">Sign In</button>
+      </div>
+
+      <div class="mt-6 pt-4 border-t text-xs text-slate-500 space-y-1">
+        <p class="font-medium text-slate-700">Quick Test Credentials:</p>
+        <p>• Author: <code class="text-indigo-600 font-bold">priya.sharma@email.com</code> / <code>author123</code></p>
+        <p>• Admin: <code class="text-indigo-600 font-bold">admin@bookleafpub.com</code> / <code>admin123</code></p>
+      </div>
+    </section>
+
+    <!-- 2. AUTHOR DASHBOARD -->
+    <section id="author-section" class="hidden space-y-8">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900 mb-4">My Published Books</h2>
+        <div id="author-books-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Ticket Form -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h3 class="font-bold text-lg text-slate-900 mb-4">Raise Support Query</h3>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Related Book</label>
+              <select id="ticket-book-select" class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
+                <option value="">General / Account Level</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Subject</label>
+              <input id="ticket-subject" placeholder="e.g. Royalty payout status" class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">Description</label>
+              <textarea id="ticket-desc" rows="4" placeholder="Detail your issue..." class="w-full border rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+            <button onclick="submitTicket()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 rounded-lg text-sm transition">Submit Ticket</button>
+          </div>
+        </div>
+
+        <!-- Author Tickets List -->
+        <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="font-bold text-lg text-slate-900">My Support Tickets</h3>
+            <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-medium">Near-realtime updates</span>
+          </div>
+          <div id="author-tickets-list" class="space-y-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ADMIN DASHBOARD -->
+    <section id="admin-section" class="hidden space-y-6">
+      <div class="flex flex-wrap justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-xl font-bold text-slate-900">Support Operations Queue</h2>
+        <div class="flex gap-3">
+          <select id="filter-status" onchange="loadAdminTickets()" class="border text-xs rounded-lg p-2 outline-none">
+            <option value="All">All Statuses</option>
+            <option value="Open">Open</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <select id="filter-category" onchange="loadAdminTickets()" class="border text-xs rounded-lg p-2 outline-none">
+            <option value="All">All Categories</option>
+            <option value="Royalty & Payments">Royalty & Payments</option>
+            <option value="ISBN & Metadata Issues">ISBN & Metadata Issues</option>
+            <option value="Printing & Quality">Printing & Quality</option>
+            <option value="Distribution & Availability">Distribution & Availability</option>
+            <option value="Book Status & Production Updates">Book Status & Production Updates</option>
+            <option value="General Inquiry">General Inquiry</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Ticket Queue Table -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+            <tr>
+              <th class="p-3">ID</th>
+              <th class="p-3">Author</th>
+              <th class="p-3">Subject</th>
+              <th class="p-3">AI Category</th>
+              <th class="p-3">AI Priority</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-tickets-tbody" class="divide-y divide-slate-100"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. TICKET DETAILS / CHAT / AI DRAFT MODAL -->
+    <div id="ticket-modal" class="hidden fixed inset-0 bg-slate-900 bg-opacity-60 flex items-center justify-center p-4 z-50">
+      <div class="bg-white max-w-3xl w-full rounded-2xl shadow-2xl p-6 max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-start pb-4 border-b">
+          <div>
+            <h3 id="modal-subject" class="text-lg font-bold text-slate-900"></h3>
+            <p id="modal-meta" class="text-xs text-slate-500 mt-1"></p>
+          </div>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 text-2xl font-bold leading-none">&times;</button>
+        </div>
+
+        <!-- Query body -->
+        <div class="my-4 p-3 bg-slate-50 border rounded-lg text-sm text-slate-700" id="modal-description"></div>
+
+        <!-- Admin Control Toolbar -->
+        <div id="modal-admin-controls" class="hidden flex flex-wrap gap-4 pb-3 border-b mb-3 text-xs">
+          <div>
+            <label class="font-semibold block text-slate-500 mb-1">Status</label>
+            <select id="modal-status" onchange="updateTicketField('status', this.value)" class="border rounded p-1.5 outline-none"></select>
+          </div>
+          <div>
+            <label class="font-semibold block text-slate-500 mb-1">Priority</label>
+            <select id="modal-priority" onchange="updateTicketField('priority', this.value)" class="border rounded p-1.5 outline-none"></select>
+          </div>
+          <div>
+            <label class="font-semibold block text-slate-500 mb-1">Category</label>
+            <select id="modal-category" onchange="updateTicketField('category', this.value)" class="border rounded p-1.5 outline-none"></select>
+          </div>
+        </div>
+
+        <!-- Conversation Stream -->
+        <div id="modal-messages" class="flex-1 overflow-y-auto space-y-3 p-3 bg-slate-50 rounded-lg border min-h-[160px] max-h-[220px]"></div>
+
+        <!-- AI Draft Box (Admin Only) -->
+        <div id="ai-draft-box" class="hidden mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs">
+          <div class="flex justify-between items-center mb-1">
+            <span class="font-bold text-amber-800">✨ AI Knowledge Base Suggested Response</span>
+            <button onclick="applyAIDraft()" class="text-amber-900 font-semibold underline hover:text-amber-700">Insert into Message Box</button>
+          </div>
+          <p id="ai-draft-content" class="text-slate-700 italic whitespace-pre-line"></p>
+        </div>
+
+        <!-- Reply Input -->
+        <div class="mt-4 flex flex-col space-y-2">
+          <textarea id="reply-input" rows="3" placeholder="Write reply..." class="w-full border rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          <div class="flex justify-between items-center">
+            <label id="internal-note-label" class="hidden text-xs text-slate-600 flex items-center space-x-1 cursor-pointer">
+              <input type="checkbox" id="reply-internal-note" />
+              <span>Internal Admin Note (Hidden from Author)</span>
+            </label>
+            <button onclick="sendReply()" class="ml-auto bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg text-sm font-semibold transition">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000/api";
+    let currentUser = null;
+    let authToken = null;
+    let activeTicketId = null;
+    let currentAIDraft = "";
+
+    async function handleLogin() {
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-pass').value;
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ email, password })
+        });
+        if (!res.ok) throw new Error("Invalid credentials");
+        const data = await res.json();
+        authToken = data.access_token;
+        currentUser = data.user;
+
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('nav-user-info').classList.remove('hidden');
+        document.getElementById('user-display').innerText = `${currentUser.name} (${currentUser.role.toUpperCase()})`;
+
+        if (currentUser.role === "author") {
+          document.getElementById('author-section').classList.remove('hidden');
+          loadAuthorDashboard();
+          setInterval(loadAuthorTickets, 5000);
+        } else {
+          document.getElementById('admin-section').classList.remove('hidden');
+          loadAdminTickets();
+          setInterval(loadAdminTickets, 5000);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function logout() {
+      location.reload();
+    }
+
+    // AUTHOR LOGIC
+    async function loadAuthorDashboard() {
+      const res = await fetch(`${API_BASE}/author/books?token=${authToken}`);
+      const books = await res.json();
+      const booksContainer = document.getElementById('author-books-grid');
+      const bookSelect = document.getElementById('ticket-book-select');
+      booksContainer.innerHTML = "";
+      bookSelect.innerHTML = '<option value="">General / Account Level</option>';
+
+      books.forEach(b => {
+        bookSelect.innerHTML += `<option value="${b.id}">${b.title}</option>`;
+        booksContainer.innerHTML += `
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-start">
+                <h4 class="font-bold text-slate-900">${b.title}</h4>
+                <span class="text-xs px-2 py-0.5 rounded-full ${b.status.includes('Live') ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${b.status}</span>
+              </div>
+              <p class="text-xs text-slate-500 mt-1">ISBN: ${b.isbn || 'N/A'} • ${b.genre || 'General'}</p>
+            </div>
+            <div class="mt-4 pt-3 border-t text-xs grid grid-cols-2 gap-2 text-slate-600">
+              <div>Copies Sold: <strong class="text-slate-800">${b.total_copies_sold}</strong></div>
+              <div>MRP: <strong class="text-slate-800">₹${b.mrp || 0}</strong></div>
+              <div>Royalty Earned: <strong class="text-emerald-700">₹${b.total_royalty_earned}</strong></div>
+              <div>Pending: <strong class="text-amber-700">₹${b.royalty_pending}</strong></div>
+            </div>
+          </div>
+        `;
+      });
+
+      loadAuthorTickets();
+    }
+
+    async function loadAuthorTickets() {
+      if (!authToken || currentUser?.role !== "author") return;
+      const res = await fetch(`${API_BASE}/author/tickets?token=${authToken}`);
+      const tickets = await res.json();
+      const container = document.getElementById('author-tickets-list');
+      if (tickets.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400">No support tickets submitted yet.</p>';
+        return;
+      }
+      container.innerHTML = tickets.map(t => `
+        <div onclick="openTicketModal(${t.id})" class="p-3 border rounded-lg hover:border-indigo-400 cursor-pointer transition flex justify-between items-center">
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-semibold text-sm text-slate-900">${t.subject}</span>
+              <span class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-600">${t.category}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">${t.book_title} • Priority: <span class="font-medium">${t.priority}</span></p>
+          </div>
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${getStatusBadge(t.status)}">${t.status}</span>
+        </div>
+      `).join('');
+    }
+
+    async function submitTicket() {
+      const book_id = document.getElementById('ticket-book-select').value || null;
+      const subject = document.getElementById('ticket-subject').value.trim();
+      const description = document.getElementById('ticket-desc').value.trim();
+      if (!subject || !description) return alert("Please fill Subject and Description");
+
+      const res = await fetch(`${API_BASE}/tickets?token=${authToken}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ book_id: book_id ? parseInt(book_id) : null, subject, description })
+      });
+      if (res.ok) {
+        document.getElementById('ticket-subject').value = "";
+        document.getElementById('ticket-desc').value = "";
+        loadAuthorTickets();
+      }
+    }
+
+    // ADMIN LOGIC
+    async function loadAdminTickets() {
+      if (!authToken || currentUser?.role !== "admin") return;
+      const status = document.getElementById('filter-status').value;
+      const category = document.getElementById('filter-category').value;
+      const res = await fetch(`${API_BASE}/admin/tickets?token=${authToken}&status_filter=${status}&category_filter=${category}`);
+      const tickets = await res.json();
+      const tbody = document.getElementById('admin-tickets-tbody');
+      tbody.innerHTML = tickets.map(t => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3 font-mono text-xs">#${t.id}</td>
+          <td class="p-3 font-medium">${t.author_name}</td>
+          <td class="p-3">${t.subject}</td>
+          <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs">${t.category}</span></td>
+          <td class="p-3"><span class="font-bold text-xs ${getPriorityColor(t.priority)}">${t.priority}</span></td>
+          <td class="p-3"><span class="text-xs font-medium px-2 py-0.5 rounded ${getStatusBadge(t.status)}">${t.status}</span></td>
+          <td class="p-3">
+            <button onclick="openTicketModal(${t.id})" class="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold px-2.5 py-1 rounded">Open</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // MODAL & CONVERSATION
+    async function openTicketModal(ticketId) {
+      activeTicketId = ticketId;
+      document.getElementById('ticket-modal').classList.remove('hidden');
+
+      const ticketListRes = await fetch(`${API_BASE}/${currentUser.role === 'admin' ? 'admin/tickets' : 'author/tickets'}?token=${authToken}`);
+      const tickets = await ticketListRes.json();
+      const ticket = tickets.find(t => t.id === ticketId);
+
+      if (ticket) {
+        document.getElementById('modal-subject').innerText = ticket.subject;
+        document.getElementById('modal-meta').innerText = `${ticket.book_title || 'General'} • Priority: ${ticket.priority} • Category: ${ticket.category}`;
+        document.getElementById('modal-description').innerText = ticket.description;
+      }
+
+      const msgsRes = await fetch(`${API_BASE}/tickets/${ticketId}/messages?token=${authToken}`);
+      const msgs = await msgsRes.json();
+      renderMessages(msgs);
+
+      if (currentUser.role === "admin") {
+        document.getElementById('modal-admin-controls').classList.remove('hidden');
+        document.getElementById('internal-note-label').classList.remove('hidden');
+        document.getElementById('ai-draft-box').classList.remove('hidden');
+
+        document.getElementById('modal-status').innerHTML = `
+          <option ${ticket?.status==='Open'?'selected':''}>Open</option>
+          <option ${ticket?.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${ticket?.status==='Resolved'?'selected':''}>Resolved</option>
+          <option ${ticket?.status==='Closed'?'selected':''}>Closed</option>
+        `;
+        document.getElementById('modal-priority').innerHTML = `
+          <option ${ticket?.priority==='Critical'?'selected':''}>Critical</option>
+          <option ${ticket?.priority==='High'?'selected':''}>High</option>
+          <option ${ticket?.priority==='Medium'?'selected':''}>Medium</option>
+          <option ${ticket?.priority==='Low'?'selected':''}>Low</option>
+        `;
+        document.getElementById('modal-category').innerHTML = `
+          <option ${ticket?.category==='Royalty & Payments'?'selected':''}>Royalty & Payments</option>
+          <option ${ticket?.category==='ISBN & Metadata Issues'?'selected':''}>ISBN & Metadata Issues</option>
+          <option ${ticket?.category==='Printing & Quality'?'selected':''}>Printing & Quality</option>
+          <option ${ticket?.category==='Distribution & Availability'?'selected':''}>Distribution & Availability</option>
+          <option ${ticket?.category==='Book Status & Production Updates'?'selected':''}>Book Status & Production Updates</option>
+          <option ${ticket?.category==='General Inquiry'?'selected':''}>General Inquiry</option>
+        `;
+
+        const draftRes = await fetch(`${API_BASE}/admin/tickets/${ticketId}/ai-draft?token=${authToken}`);
+        const draftData = await draftRes.json();
+        currentAIDraft = draftData.draft_response;
+        document.getElementById('ai-draft-content').innerText = currentAIDraft;
+      } else {
+        document.getElementById('modal-admin-controls').classList.add('hidden');
+        document.getElementById('internal-note-label').classList.add('hidden');
+        document.getElementById('ai-draft-box').classList.add('hidden');
+      }
+    }
+
+    async function updateTicketField(field, value) {
+      if (!activeTicketId) return;
+      const body = {};
+      body[field] = value;
+      await fetch(`${API_BASE}/tickets/${activeTicketId}?token=${authToken}`, {
+        method: "PATCH",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body)
+      });
+      loadAdminTickets();
+    }
+
+    function renderMessages(msgs) {
+      const box = document.getElementById('modal-messages');
+      if (msgs.length === 0) {
+        box.innerHTML = '<p class="text-xs text-slate-400">No replies yet in this thread.</p>';
+        return;
+      }
+      box.innerHTML = msgs.map(m => `
+        <div class="p-2.5 rounded-lg text-xs ${m.is_internal_note ? 'bg-amber-100 border border-amber-300' : (m.sender_role === 'admin' ? 'bg-indigo-50 text-indigo-950 border border-indigo-100' : 'bg-white border')}">
+          <div class="flex justify-between font-semibold mb-1">
+            <span>${m.sender_role === 'admin' ? 'Operations Representative' : 'Author'} ${m.is_internal_note ? '(Internal Note)' : ''}</span>
+            <span class="text-slate-400 font-normal">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+          <p class="whitespace-pre-line leading-relaxed">${m.message}</p>
+        </div>
+      `).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function sendReply() {
+      const input = document.getElementById('reply-input');
+      const isInternal = document.getElementById('reply-internal-note').checked;
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const res = await fetch(`${API_BASE}/tickets/${activeTicketId}/messages?token=${authToken}`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ message: msg, is_internal_note: isInternal })
+      });
+      if (res.ok) {
+        input.value = "";
+        const updated = await (await fetch(`${API_BASE}/tickets/${activeTicketId}/messages?token=${authToken}`)).json();
+        renderMessages(updated);
+      }
+    }
+
+    function applyAIDraft() {
+      document.getElementById('reply-input').value = currentAIDraft;
+    }
+
+    function closeModal() {
+      document.getElementById('ticket-modal').classList.add('hidden');
+      activeTicketId = null;
+    }
+
+    function getPriorityColor(p) {
+      if (p === 'Critical') return 'text-red-700 bg-red-50 px-2 py-0.5 rounded';
+      if (p === 'High') return 'text-orange-700 bg-orange-50 px-2 py-0.5 rounded';
+      if (p === 'Medium') return 'text-amber-700 bg-amber-50 px-2 py-0.5 rounded';
+      return 'text-slate-600 bg-slate-50 px-2 py-0.5 rounded';
+    }
+
+    function getStatusBadge(s) {
+      if (s === 'Open') return 'bg-blue-100 text-blue-800';
+      if (s === 'In Progress') return 'bg-amber-100 text-amber-800';
+      if (s === 'Resolved') return 'bg-emerald-100 text-emerald-800';
+      return 'bg-slate-200 text-slate-700';
+    }
+  </script>
+</body>
+</html>
